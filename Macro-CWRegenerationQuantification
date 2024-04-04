@@ -29,8 +29,8 @@ Morpho_Measurments = "pixel_count area perimeter circularity euler_number boundi
 BF_suffix = "-BF.tif"; //Brightfield image
 CW_suffix = "-CW.tif"; //Cell wall stain image (e.g. Calcofluor)
 Via_suffix = "-Viability.tif"; //Viability stain image (e.g FDA)
-CWInt_suffix = "-CW_Intensity.csv"; //MorpholibJ fluorescence intensity measurment on the CW channel
-ViaInt_suffix = "-Viability_Intensity.csv"; //MorpholibJ fluorescence intensity measurment on the viability channel
+CWInt_suffix = "-CW-Intensity.csv"; //MorpholibJ fluorescence intensity measurment on the CW channel
+ViaInt_suffix = "-Viability-Intensity.csv"; //MorpholibJ fluorescence intensity measurment on the viability channel
 Morpho_suffix = "-Morphometry.csv"; //MorpholibJ "analyze regions" measurment on labels
 
 ///====================================================///
