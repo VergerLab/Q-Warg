@@ -20,9 +20,13 @@ Brightfield <- pic[grep("BF", pic)]
 Viability <- pic[grep("Viability", pic)]
 CellWall <- pic[grep("CW", pic)]
 
+# Convert the image dimensions into pixels:
+donnees$cooX_px <- donnees$cooX/0.6490139 
+donnees$cooY_px <- donnees$cooY/0.6490139
 
 ui <- fluidPage(
-  titlePanel("Segpipe-CW: check results"),
+  theme = bslib::bs_theme(bootswatch = "darkly"),
+  titlePanel("Segpipe-CW: check your data"),
   sidebarLayout(
     sidebarPanel(
       selectInput("select_column_value", "Select a condition:", choices = unique(donnees$medium))
@@ -49,7 +53,6 @@ ui <- fluidPage(
 
 # Define server logic
 server <- function(input, output) {
-  
   clicked_coords <- reactiveValues(cgX = NULL, cgY = NULL)
   real_coords <- reactiveValues(cX = NULL, cY= NULL)
   
@@ -64,7 +67,7 @@ server <- function(input, output) {
     # Plot
     p <- ggplot(condition, aes(x = medium, y = meanCW)) +
       geom_point(aes(color = diameter), size = 1.5, alpha = 0.8, position = position_jitter(width = 0.4, height = 0)) +
-      scale_color_gradient(low = "orange", high = "green") +
+      scale_color_gradientn(colors= c("yellow", "red", "purple", "blue")) 
       theme_bw() +
       ggtitle("CW intensity") +
       xlab("medium") +
@@ -92,8 +95,8 @@ server <- function(input, output) {
   
   # Function to calculate picture coordinates
   coordinates <- function(cgY, donnees) {
-    cX <- donnees$cooX[donnees$meanCW == cgY]
-    cY <- donnees$cooY[donnees$meanCW == cgY]
+    cX <- donnees$cooX_px[donnees$meanCW == cgY]
+    cY <- donnees$cooY_px[donnees$meanCW == cgY]
     return(c(cX, cY))
   }
   
@@ -108,7 +111,6 @@ server <- function(input, output) {
     coords <- coordinates(clicked_coords$cgY, donnees)
     paste("Picture coordinates: (X =", coords[1], ", Y =", coords[2], ")")
   })
-  
   
   # Render the zoomed image
   output$zoomed_bf <- renderImage({
