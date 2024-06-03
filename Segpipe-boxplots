@@ -1,0 +1,197 @@
+# Library needed to run the code: (need to be installed beforehand)
+require(data.table)
+library(rlist)
+library(plyr)
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(readr)
+library(ggplot2)
+library(hrbrthemes)
+library(viridis)
+library(stringr)
+library(scales)
+library(tidyverse)
+
+# choose working directory where the subfolders containing data tables generated with ImageJ are:
+work_folder <- choose.dir()
+setwd(work_folder)
+
+# take all the csv files in the working directory, searching in the subfolders too
+# make a list of all csv files and create a data frame containing morphometry and fluorescence intensities
+all_files <- list.files(path = work_folder, recursive = TRUE, full.names = TRUE)
+file_list <- all_files[grepl("\\.csv$", all_files)]
+csv_list <- lapply(file_list, function(file) {
+  data <- read.csv(file)
+  data$filename <- basename(file)
+  return(data)
+})
+merged_csv <- bind_rows(csv_list)
+
+merged_csv[c('Date', 'Medium')] <- str_split_fixed(merged_csv$medium, '_', 2)
+
+merged_csv <- merged_csv %>%
+  mutate(Replicate = case_when(
+    Date == "240319" ~ "n1",
+    Date == "240409" ~ "n2",
+    Date == "240528" ~ "n3",
+    TRUE ~ NA_character_
+))
+
+merged_csv$repmed <- paste(merged_csv$Medium, merged_csv$Replicate, sep = '-')
+
+merged_csv$MH[merged_csv$Medium >= 0.8 & wdta$meanViability >= 500] <- "yes"
+
+merged_csv$MH <- merged_csv$Medium
+merged_csv$MH <- gsub("h\\d+", "hormones", merged_csv$MH)
+merged_csv$MH <- gsub("m\\d+", "sugars", merged_csv$MH)
+
+Hormones <- subset(merged_csv, grepl("^h", Medium))
+Sugars <- subset(merged_csv, grepl("^m", Medium))
+
+
+######################################################## PLOTS #############################################################
+
+CW_intensity_plot_all <- merged_csv %>%
+  ggplot(aes(x = Medium, y = meanCW)) +
+  geom_jitter(aes(color = Replicate), size = 0.5, alpha = 0.5) +
+  geom_boxplot(color = 'black', alpha=0, width = 0.8) +
+  ggtitle("Hormones and Sugars") +
+  xlab("Media") +
+  ylab("Cell wall staining")+
+  scale_y_log10() +
+  stat_summary(fun = "mean", geom = "point", shape = 3, size = 3, fill = "black")+ #use shape 15 for black square
+  theme(strip.text.x.top = element_text(colour = "white", size = 13),
+        strip.background = element_rect(colour = "black", fill = "black"),
+        panel.grid.major.x = element_line(color = "#CBD2D9", ),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_line(color = "#CBD2D9"),
+        panel.grid.minor.y = element_line(color = "#CBD2D9"),
+        panel.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(hjust = 0.5, size = 20),
+        axis.title.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15)
+  )
+
+print(CW_intensity_plot_all)
+
+CW_intensity_plot_all_replicates <- merged_csv %>%
+  ggplot(aes(fill = Replicate, x = Medium, y = meanCW)) +
+  geom_boxplot(color = 'black', width = 0.8) +
+  ggtitle("Hormones and Sugars") +
+  xlab("Media") +
+  ylab("Cell wall staining")+
+  scale_y_log10() +
+  stat_summary(fun = "mean", geom = "point", shape = 3, size = 3, fill = "black")+ #use shape 15 for black square
+  theme(strip.text.x.top = element_text(colour = "white", size = 13),
+        strip.background = element_rect(colour = "black", fill = "black"),
+        panel.grid.major.x = element_line(color = "#CBD2D9", ),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_line(color = "#CBD2D9"),
+        panel.grid.minor.y = element_line(color = "#CBD2D9"),
+        panel.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(hjust = 0.5, size = 20),
+        axis.title.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15)
+  )
+
+print(CW_intensity_plot_all_replicates)
+
+CW_intensity_plot <- merged_csv %>%
+  ggplot(aes(x = Medium, y = meanCW)) +
+  geom_jitter(aes(color = diameter), size = 0.5, alpha = 0.5) +
+  scale_color_gradientn(colors= c("yellow", "red", "purple", "blue")) +
+  geom_boxplot(color = 'black', alpha=0, width = 0.8) +
+  ggtitle("Hormones and Sugars") +
+  xlab("Media") +
+  ylab("Cell wall staining")+
+  scale_y_log10() +
+  stat_summary(fun = "mean", geom = "point", shape = 3, size = 3, fill = "black")+ #use shape 15 for black square
+  facet_wrap(~Replicate, nrow = 3) +
+  theme(strip.text.x.top = element_text(colour = "white", size = 13),
+        strip.background = element_rect(colour = "black", fill = "black"),
+        panel.grid.major.x = element_line(color = "#CBD2D9", ),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_line(color = "#CBD2D9"),
+        panel.grid.minor.y = element_line(color = "#CBD2D9"),
+        panel.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(hjust = 0.5, size = 20),
+        axis.title.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15)
+  )
+
+print(CW_intensity_plot)
+
+CW_intensity_plot_Hormones <- Hormones %>%
+  ggplot(aes(x = Medium, y = meanCW)) +
+  geom_jitter(aes(color = diameter), size = 0.5, alpha = 0.5) +
+  scale_color_gradientn(colors= c("yellow", "red", "purple", "blue")) +
+  geom_boxplot(color = 'black', alpha=0, width = 0.8) +
+  ggtitle("Hormones") +
+  xlab("Media") +
+  ylab("Cell wall staining")+
+  scale_y_log10() +
+  stat_summary(fun = "mean", geom = "point", shape = 3, size = 3, fill = "black")+ #use shape 15 for black square
+  facet_wrap(~Replicate, nrow = 3) +
+  theme(strip.text.x.top = element_text(colour = "white", size = 13),
+        strip.background = element_rect(colour = "black", fill = "black"),
+        panel.grid.major.x = element_line(color = "#CBD2D9", ),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_line(color = "#CBD2D9"),
+        panel.grid.minor.y = element_line(color = "#CBD2D9"),
+        panel.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(hjust = 0.5, size = 20),
+        axis.title.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15)
+  )
+
+CW_intensity_plot_Sugars <- Sugars %>%
+  ggplot(aes(x = Medium, y = meanCW)) +
+  geom_jitter(aes(color = diameter), size = 0.5, alpha = 0.5) +
+  scale_color_gradientn(colors= c("yellow", "red", "purple", "blue")) +
+  geom_boxplot(color = 'black', alpha=0, width = 0.8) +
+  ggtitle("Sugars") +
+  xlab("Media") +
+  ylab("Cell wall staining")+
+  scale_y_log10() +
+  stat_summary(fun = "mean", geom = "point", shape = 3, size = 3, fill = "black")+ #use shape 15 for black square
+  facet_wrap(~Replicate, nrow = 3) +
+  theme(strip.text.x.top = element_text(colour = "white", size = 13),
+        strip.background = element_rect(colour = "black", fill = "black"),
+        panel.grid.major.x = element_line(color = "#CBD2D9", ),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_line(color = "#CBD2D9"),
+        panel.grid.minor.y = element_line(color = "#CBD2D9"),
+        panel.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(hjust = 0.5, size = 20),
+        axis.title.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15)
+        )
+  
+print(CW_intensity_plot_Hormones)
+print(CW_intensity_plot_Sugars)
+
+CW_intensity_plot <- merged_csv %>%
+  ggplot(aes(x = Medium, y = meanCW)) +
+  geom_jitter(aes(color = diameter), size = 0.5, alpha = 0.5) +
+  scale_color_gradientn(colors= c("yellow", "red", "purple", "blue")) +
+  geom_boxplot(color = 'black', alpha=0, width = 0.8) +
+  ggtitle("Sugars") +
+  xlab("Media") +
+  ylab("Cell wall staining")+
+  scale_y_log10() +
+  stat_summary(fun = "mean", geom = "point", shape = 3, size = 3, fill = "black")+ #use shape 15 for black square
+  facet_wrap(~Replicate, nrow = 3) +
+  theme(strip.text.x.top = element_text(colour = "white", size = 13),
+        strip.background = element_rect(colour = "black", fill = "black"),
+        panel.grid.major.x = element_line(color = "#CBD2D9", ),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.major.y = element_line(color = "#CBD2D9"),
+        panel.grid.minor.y = element_line(color = "#CBD2D9"),
+        panel.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(hjust = 0.5, size = 20),
+        axis.title.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15)
+  )
+
+print(CW_intensity_plot)
