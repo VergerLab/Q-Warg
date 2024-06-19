@@ -1,16 +1,8 @@
 # Library needed to run the code: (need to be installed beforehand)
-require(data.table)
+library(data.table)
 library(rlist)
-library(plyr)
-library(dplyr)
-library(purrr)
-library(tidyr)
-library(readr)
-library(ggplot2)
 library(hrbrthemes)
 library(viridis)
-library(stringr)
-library(scales)
 library(tidyverse)
 
 # choose working directory where the subfolders containing data tables generated with ImageJ are:
