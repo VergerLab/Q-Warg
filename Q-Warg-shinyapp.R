@@ -1,5 +1,6 @@
+# Libraries needed to run the script
 library(shiny)
-library(ggplot2)
+library(tidyverse)
 library(plotly)
 library(magick)
 
@@ -26,7 +27,7 @@ donnees$cooY_px <- donnees$cooY/0.6490139
 
 ui <- fluidPage(
   theme = bslib::bs_theme(bootswatch = "darkly"),
-  titlePanel("Segpipe-CW: check your data"),
+  titlePanel("Q-Warg (Quantitative Wall Regeneration): check your data"),
   sidebarLayout(
     sidebarPanel(
       selectInput("select_column_value", "Select a condition:", choices = unique(donnees$medium))
