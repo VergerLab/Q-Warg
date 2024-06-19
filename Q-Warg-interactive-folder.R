@@ -1,6 +1,4 @@
-
 # code to move the jpg and livedta-saved into a new folder to be used in the interactive plot app.
-
 interactive_files <- choose.dir()
 
 # Set your working directory
