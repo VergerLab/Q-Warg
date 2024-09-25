@@ -2,7 +2,7 @@
 ## THIS WILL CHECK IF THE PACKAGES ARE ALREADY INSTALLED AND INSTALL THE ONES THAT ARE NEEDED ONLY.
 
 # Define the packages you want to install
-packages <- c("data.table", "rlist", "hrbrthemes", "viridis", "tidyverse", "shiny", "plotly", "magick")
+packages <- c("data.table", "rlist", "hrbrthemes", "viridis", "tidyverse", "tcltk", "shiny", "plotly", "magick")
 # Find out which packages are already installed
 installed_packages <- rownames(installed.packages())
 # Determine which packages are not installed
